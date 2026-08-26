@@ -50,7 +50,7 @@ export function ExploraPorColeccion({ grupos }: { grupos: GrupoColeccion[] }) {
                       alt=""
                       aria-hidden="true"
                       fill
-                      sizes="(min-width: 48rem) 88px, 64px"
+                      sizes="(min-width: 48rem) 240px, 200px"
                       unoptimized={/^https?:\/\//i.test(g.foto)}
                     />
                   ) : null}

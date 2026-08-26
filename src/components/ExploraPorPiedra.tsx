@@ -151,7 +151,9 @@ export function ExploraPorPiedra({ grupos }: { grupos: GrupoPiedra[] }) {
           <p className="piedras__frase">{grupo.frase}</p>
         ) : null}
 
-        <div className="rejilla piedras__rejilla">
+        {/* Sin la clase .rejilla: su minmax(15rem) fuerza una sola columna
+            en móvil y pisa a .piedras__rejilla por orden en la hoja */}
+        <div className="piedras__rejilla">
           {mostradas.map((p, i) => (
             <TarjetaPieza key={p.slug} pieza={p} prioridad={i < 2} />
           ))}
