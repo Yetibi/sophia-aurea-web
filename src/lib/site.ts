@@ -3,7 +3,7 @@
 export const MARCA = {
   nombre: "Sophia Auréa",
   tagline: "Joyería con Alma",
-  atributos: ["Oro 18K", "Piedras Naturales", "Hecho con intención"],
+  atributos: ["Oro Ley 750", "Piedras Naturales", "Hecho con intención"],
   ciudad: "Medellín, Colombia",
   instagram: "sophiaaurea.joyas",
   instagramUrl: "https://instagram.com/sophiaaurea.joyas",
@@ -54,7 +54,7 @@ export function colorDePiedra(piedra: string): string {
 }
 
 /** Clave de comparación: sin tildes, minúsculas, espacios colapsados. */
-function clavePiedra(texto: string): string {
+function claveNormalizada(texto: string): string {
   return texto
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
@@ -69,7 +69,7 @@ function clavePiedra(texto: string): string {
  * unificar aparecen como dos piedras distintas en el filtro.
  */
 const PIEDRA_CANONICA: Record<string, string> = Object.fromEntries(
-  Object.keys(COLOR_PIEDRA).map((nombre) => [clavePiedra(nombre), nombre])
+  Object.keys(COLOR_PIEDRA).map((nombre) => [claveNormalizada(nombre), nombre])
 );
 
 /**
@@ -79,12 +79,42 @@ const PIEDRA_CANONICA: Record<string, string> = Object.fromEntries(
 export function canonizarPiedra(texto: string): string {
   const limpio = texto.replace(/\s+/g, " ").trim();
   if (!limpio) return "";
-  const canonica = PIEDRA_CANONICA[clavePiedra(limpio)];
+  const canonica = PIEDRA_CANONICA[claveNormalizada(limpio)];
   if (canonica) return canonica;
   return limpio
     .split(" ")
     .map((palabra) => palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase())
     .join(" ");
+}
+
+/**
+ * Grafía correcta de cada colección, indexada por su clave sin tildes.
+ * Igual que con las piedras: el Excel se llena a mano y llegan variantes
+ * ("Arcangeles" sin tilde) que deben agruparse y mostrarse bien escritas.
+ */
+const COLECCION_CANONICA: Record<string, string> = Object.fromEntries(
+  [
+    "Arcángeles",
+    "Fortuna",
+    "Del mar",
+    "Cor Aurea",
+    "Celestial",
+    "Guardianes",
+    "Karma & Luck",
+  ].map((nombre) => [claveNormalizada(nombre), nombre])
+);
+
+/**
+ * Devuelve la grafía correcta de una colección. Una colección que no esté
+ * en el mapa se respeta tal cual viene, solo capitalizada.
+ */
+export function canonizarColeccion(texto: string): string {
+  const limpio = texto.replace(/\s+/g, " ").trim();
+  if (!limpio) return "";
+  const canonica = COLECCION_CANONICA[claveNormalizada(limpio)];
+  if (canonica) return canonica;
+  // Solo la inicial: "Del mar" no debe volverse "Del Mar"
+  return limpio.charAt(0).toUpperCase() + limpio.slice(1);
 }
 
 /** Orden en que se presentan las piedras cuando estan disponibles. */

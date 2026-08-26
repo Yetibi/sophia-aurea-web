@@ -10,7 +10,7 @@
 
 import "server-only";
 import { graphJson, rutaDriveCatalogo } from "./graph";
-import { canonizarPiedra } from "./site";
+import { canonizarPiedra, canonizarColeccion } from "./site";
 import type { Pieza, Disponibilidad } from "./tipos";
 
 export type { Pieza } from "./tipos";
@@ -126,7 +126,8 @@ function construirPieza(fila: unknown[], idx: Record<string, number>): Pieza | n
     descripcion,
     figura: aTexto(leer("figura")),
     tipoPieza,
-    coleccion: aTexto(leer("coleccion")) || "Sophia Auréa",
+    // Como con la piedra: "Arcangeles" y "Arcángeles" son la misma colección
+    coleccion: canonizarColeccion(aTexto(leer("coleccion"))) || "Sophia Auréa",
     piedra,
     colorPiedra: aTexto(leer("colorPiedra")),
     formaPiedra: aTexto(leer("formaPiedra")),

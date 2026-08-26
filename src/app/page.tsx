@@ -38,10 +38,26 @@ export const revalidate = 300;
 function agruparPorColeccion(
   piezas: Awaited<ReturnType<typeof obtenerPiezasSeguro>>["piezas"]
 ): GrupoColeccion[] {
+  // Defensa temporal contra datos mal capturados, no una regla de negocio:
+  // algunas filas traen el tipo de pieza en la columna "coleccion" ("Topos",
+  // "Punto de luz"). Se descartan como colección hasta que se corrija el
+  // Excel; la pieza se sigue publicando en su categoría con normalidad.
+  //
+  // Se comparan las dos formas del tipo —cruda y pluralizada— porque
+  // slugDeTipo convierte "Punto de luz" en "puntos-de-luz" y la colección
+  // mal capturada llega en singular.
+  const tiposConocidos = new Set<string>();
+  for (const p of piezas) {
+    if (!p.tipoPieza) continue;
+    tiposConocidos.add(slugDeTipo(p.tipoPieza));
+    tiposConocidos.add(slugDeColeccion(p.tipoPieza));
+  }
+
   const porColeccion = new Map<string, GrupoColeccion>();
   for (const p of piezas) {
     if (!p.coleccion) continue;
     const slug = slugDeColeccion(p.coleccion);
+    if (tiposConocidos.has(slug)) continue;
     let grupo = porColeccion.get(slug);
     if (!grupo) {
       grupo = {

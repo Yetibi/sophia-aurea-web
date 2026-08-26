@@ -132,7 +132,7 @@ export function Sello() {
         fontSize="7.5"
         letterSpacing="4"
       >
-        ORO 18K
+        ORO LEY 750
       </text>
     </svg>
   );

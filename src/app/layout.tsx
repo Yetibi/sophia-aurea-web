@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     default: `${MARCA.nombre} — ${MARCA.tagline}`,
     template: `%s — ${MARCA.nombre}`,
   },
-  description: `${MANTRA.join(" ")} Joyería en oro 18K y piedras naturales, hecha en ${MARCA.ciudad}.`,
+  description: `${MANTRA.join(" ")} Joyería en oro Ley 750 y piedras naturales, hecha en ${MARCA.ciudad}.`,
   openGraph: {
     type: "website",
     locale: "es_CO",
@@ -23,7 +23,8 @@ export const metadata: Metadata = {
     description: MANTRA.join(" "),
     url: MARCA.url,
     // Cuadrada: es como se comparte el sitio por WhatsApp, el canal de venta
-    images: [{ url: "/marca/og-imagen.png", width: 1000, height: 1000, alt: MARCA.nombre }],
+    // 1200×630: la proporción que WhatsApp y las redes recortan sin cortar
+    images: [{ url: "/marca/og-imagen.png", width: 1200, height: 630, alt: MARCA.nombre }],
   },
   twitter: { card: "summary_large_image" },
   icons: {

@@ -79,7 +79,7 @@ export const POLITICAS: Politica[] = [
       {
         titulo: "Garantía",
         parrafos: [
-          "Nuestras piezas en oro 18K (ley 750) y piedras naturales cuentan con garantía por defectos de fabricación de [REVISAR: plazo, p. ej. un año] a partir de la entrega, acreditada con el certificado de la pieza. La garantía no cubre desgaste por uso, golpes, pérdida de piedras por maltrato ni intervenciones de terceros.",
+          "Nuestras piezas en oro Ley 750 y piedras naturales cuentan con garantía por defectos de fabricación de [REVISAR: plazo, p. ej. un año] a partir de la entrega, acreditada con el certificado de la pieza. La garantía no cubre desgaste por uso, golpes, pérdida de piedras por maltrato ni intervenciones de terceros.",
         ],
       },
     ],
