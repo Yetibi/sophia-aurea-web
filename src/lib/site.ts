@@ -53,6 +53,40 @@ export function colorDePiedra(piedra: string): string {
   return COLOR_PIEDRA[piedra] ?? "#A08A6A";
 }
 
+/** Clave de comparación: sin tildes, minúsculas, espacios colapsados. */
+function clavePiedra(texto: string): string {
+  return texto
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Grafía correcta de cada piedra, indexada por su clave sin tildes.
+ * El Excel se llena a mano y llegan variantes ("Rubi" y "Rubí"), que sin
+ * unificar aparecen como dos piedras distintas en el filtro.
+ */
+const PIEDRA_CANONICA: Record<string, string> = Object.fromEntries(
+  Object.keys(COLOR_PIEDRA).map((nombre) => [clavePiedra(nombre), nombre])
+);
+
+/**
+ * Devuelve la grafía correcta de una piedra. Una piedra que no esté en el
+ * mapa se respeta tal cual viene, solo capitalizada — nunca se descarta.
+ */
+export function canonizarPiedra(texto: string): string {
+  const limpio = texto.replace(/\s+/g, " ").trim();
+  if (!limpio) return "";
+  const canonica = PIEDRA_CANONICA[clavePiedra(limpio)];
+  if (canonica) return canonica;
+  return limpio
+    .split(" ")
+    .map((palabra) => palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase())
+    .join(" ");
+}
+
 /** Orden en que se presentan las piedras cuando estan disponibles. */
 export const ORDEN_PIEDRAS = [
   "Zafiro Azul",

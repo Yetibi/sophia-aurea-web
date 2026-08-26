@@ -169,7 +169,7 @@ export default async function PaginaJoya({ params }: Props) {
               {enlaceCompra && pieza.disponible ? (
                 <p style={{ margin: "0 0 1.5rem" }}>
                   <a
-                    className="boton boton--primario"
+                    className="boton boton--whatsapp"
                     href={enlaceCompra}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -236,7 +236,7 @@ export default async function PaginaJoya({ params }: Props) {
 
       {enlaceCompra && pieza.disponible ? (
         <div className="cta-fija">
-          <a className="boton boton--primario" href={enlaceCompra} target="_blank" rel="noopener noreferrer">
+          <a className="boton boton--whatsapp" href={enlaceCompra} target="_blank" rel="noopener noreferrer">
             <IconoWhatsApp />
             Me interesa esta pieza
             <span className="solo-lectores">(se abre en una pestaña nueva)</span>

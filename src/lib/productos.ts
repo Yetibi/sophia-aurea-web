@@ -10,6 +10,7 @@
 
 import "server-only";
 import { graphJson, rutaDriveCatalogo } from "./graph";
+import { canonizarPiedra } from "./site";
 import type { Pieza, Disponibilidad } from "./tipos";
 
 export type { Pieza } from "./tipos";
@@ -112,7 +113,8 @@ function construirPieza(fila: unknown[], idx: Record<string, number>): Pieza | n
   if (!nombre && !descripcion && !sku) return null; // fila vacía
 
   const nombreFinal = nombre || descripcion || sku;
-  const piedra = aTexto(leer("piedra"));
+  // El Excel se llena a mano: "Rubi" y "Rubí" son la misma piedra
+  const piedra = canonizarPiedra(aTexto(leer("piedra")));
   const tipoPieza = aTexto(leer("tipoPieza")) || "Pieza";
   const slugManual = generarSlug(aTexto(leer("slug")));
   const precio = aNumero(leer("precioCop"));
@@ -167,10 +169,37 @@ export async function obtenerPiezas(): Promise<Pieza[]> {
   ]);
 
   const idx = mapearColumnas(encabezado.values?.[0] ?? []);
-  return filas.value
+  const piezas = filas.value
     .map((f) => construirPieza(f.values?.[0] ?? [], idx))
     .filter((p): p is Pieza => p !== null)
     .filter((p) => p.disponible);
+
+  return desambiguarSlugs(piezas);
+}
+
+/**
+ * Garantiza un slug único por pieza.
+ *
+ * Varias piezas del catálogo comparten nombre (dos "Dije elefante zafiro
+ * piedra verde" que se distinguen por tamaño o peso), y el slug se deriva
+ * del nombre: sin esto quedan URLs duplicadas y React marca claves
+ * repetidas. La primera conserva el slug limpio para no romper enlaces ya
+ * publicados; las siguientes se sufijan con su SKU, que sí es único.
+ */
+function desambiguarSlugs(piezas: Pieza[]): Pieza[] {
+  const vistos = new Set<string>();
+  return piezas.map((p) => {
+    if (!vistos.has(p.slug)) {
+      vistos.add(p.slug);
+      return p;
+    }
+    let candidato = `${p.slug}-${generarSlug(p.sku)}`;
+    // Si hasta el SKU se repite, se numera: nunca dos claves iguales
+    let n = 2;
+    while (vistos.has(candidato)) candidato = `${p.slug}-${generarSlug(p.sku)}-${n++}`;
+    vistos.add(candidato);
+    return { ...p, slug: candidato };
+  });
 }
 
 /** Igual que obtenerPiezas pero nunca lanza: la portada debe verse aunque Graph falle. */

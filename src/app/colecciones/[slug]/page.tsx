@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { obtenerPiezasSeguro, piezasDeColeccion } from "@/lib/productos";
+import { obtenerPiezasSeguro, piezasDeColeccion, slugDeColeccion } from "@/lib/productos";
 import type { Pieza } from "@/lib/tipos";
 import { MARCA, COLECCIONES_WEB, colorDePiedra } from "@/lib/site";
 import { enlaceWhatsAppGeneral } from "@/lib/comercio";
@@ -13,13 +13,29 @@ export const revalidate = 300;
 
 type Props = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
-  return Object.keys(COLECCIONES_WEB).map((slug) => ({ slug }));
+export async function generateStaticParams() {
+  // Las colecciones nuevas aparecen en el Excel antes de registrarse en
+  // COLECCIONES_WEB: se generan igual para que su enlace no dé 404.
+  const { piezas } = await obtenerPiezasSeguro();
+  const delCatalogo = piezas.map((p) => slugDeColeccion(p.coleccion));
+  const todos = new Set([...Object.keys(COLECCIONES_WEB), ...delCatalogo]);
+  return [...todos].filter(Boolean).map((slug) => ({ slug }));
+}
+
+/** Datos de presentación: los validados si existen; si no, los del catálogo. */
+function resolverColeccion(slug: string, piezas: Pieza[]) {
+  const publicada = COLECCIONES_WEB[slug];
+  if (publicada) return publicada;
+  const primera = piezas.find((p) => slugDeColeccion(p.coleccion) === slug);
+  if (!primera) return null;
+  // Sin texto validado no se inventa presentación: solo el nombre real
+  return { nombre: primera.coleccion, presentacion: "", simbolo: "" };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const coleccion = COLECCIONES_WEB[slug];
+  const { piezas } = await obtenerPiezasSeguro();
+  const coleccion = resolverColeccion(slug, piezas);
   if (!coleccion) return {};
   return {
     title: `Colección ${coleccion.nombre}`,
@@ -32,10 +48,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PaginaColeccion({ params }: Props) {
   const { slug } = await params;
-  const coleccion = COLECCIONES_WEB[slug];
+  const { piezas } = await obtenerPiezasSeguro();
+  const coleccion = resolverColeccion(slug, piezas);
   if (!coleccion) notFound();
 
-  const { piezas } = await obtenerPiezasSeguro();
   const propias = piezasDeColeccion(piezas, slug);
 
   const jsonLd = jsonLdMiga([
@@ -93,7 +109,7 @@ export default async function PaginaColeccion({ params }: Props) {
 
           <p style={{ marginTop: "var(--e4)", display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
             <a
-              className="boton boton--secundario"
+              className="boton boton--whatsapp"
               href={enlaceWhatsAppGeneral(`coleccion-${slug}`)}
               target="_blank"
               rel="noopener noreferrer"

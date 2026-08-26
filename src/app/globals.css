@@ -7,12 +7,19 @@
 
 :root {
   /* Color */
-  --marfil: #f7f1e6;
+  /* El fondo base es el tono más claro; las superficies (tarjetas, paneles)
+     van un punto más cálidas. La diferencia es sutil a propósito: es el
+     borde --linea el que define la tarjeta, no el relleno. */
+  --marfil: #fdfbf7;
   --marfil-2: #f2eadc;
-  --superficie: #fdfbf7;
+  --superficie: #f7f1e6;
   --oro: #c8a064; /* solo ornamento */
   --oro-texto: #7e6039; /* bronce legible: 5.16:1 sobre marfil */
   --tinta: #4a3a22; /* espresso: 9.73:1 sobre marfil */
+  /* Verde de contacto: el mismo tono de la Esmeralda de la paleta, no el
+     verde de WhatsApp (#25D366 da 1.92:1 con texto marfil y falla AA). */
+  --verde: #2d6a4f;
+  --verde-hover: #245741;
   --linea: #e3d7c3;
   --velo: rgba(74, 58, 34, 0.45);
 
@@ -150,12 +157,12 @@ ul {
 
 .eyebrow {
   font-family: var(--utilidad);
-  font-size: var(--t-xs);
+  font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
   color: var(--oro-texto);
-  margin: 0 0 var(--e2);
+  margin: 0 0 0.75rem;
 }
 
 .firma {
@@ -187,9 +194,20 @@ ul {
   text-transform: uppercase;
   text-decoration: none;
   border: 1px solid transparent;
-  border-radius: var(--radio);
+  /* Píldora: mismo lenguaje que el botón de artículos y las tarjetas */
+  border-radius: 999px;
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+/* Botón de contacto: verde de la paleta, no el de WhatsApp */
+.boton--whatsapp {
+  background: var(--verde);
+  color: var(--marfil);
+  border-color: var(--verde);
+}
+.boton--whatsapp:hover {
+  background: var(--verde-hover);
+  border-color: var(--verde-hover);
 }
 .boton--primario {
   background: var(--tinta);
@@ -215,9 +233,27 @@ ul {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(247, 241, 230, 0.92);
+  /* Translúcida sobre el fondo base (--marfil #FDFBF7): el rgba no puede
+     usar la variable porque necesita alfa propio */
+  background: rgba(253, 251, 247, 0.92);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--linea);
+  transition: background-color 300ms ease, border-color 300ms ease;
+}
+/* Sobre el hero: flota sin franja. Solo un degradado que protege la
+   legibilidad de la marca y el menú, ambos en --tinta. */
+.cabecera--sobre-hero {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(253, 251, 247, 0.7) 0%,
+    rgba(253, 251, 247, 0.35) 55%,
+    rgba(253, 251, 247, 0) 100%
+  );
+  backdrop-filter: none;
+  border-bottom: none;
 }
 .cabecera__fila {
   display: flex;
@@ -230,6 +266,10 @@ ul {
   display: flex;
   align-items: center;
   gap: clamp(0.75rem, 2vw, 1.75rem);
+}
+/* En escritorio el panel es solo un envoltorio y el botón no existe */
+.cabecera__boton-menu {
+  display: none;
 }
 .cabecera__enlace {
   font-family: var(--utilidad);
@@ -288,25 +328,6 @@ ul {
 .hero {
   padding-block: clamp(3.5rem, 9vw, var(--e6)) clamp(2.5rem, 6vw, var(--e5));
 }
-/* Con fotos de fondo el hero gana aire y el texto se apoya sobre el velo.
-   min-height: con object-fit contain la foto necesita alto propio para
-   mostrarse completa; sin esto quedaría una franja diminuta. */
-.hero--con-fondo {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  border-block: 1px solid var(--linea);
-  padding-block: clamp(4.5rem, 12vw, var(--e6));
-  min-height: min(38rem, 82vh);
-  display: grid;
-  align-items: center;
-}
-/* Halo marfil: el texto mantiene su contraste aunque la foto asome detrás */
-.hero--con-fondo .hero__texto {
-  text-shadow:
-    0 0 12px var(--marfil),
-    0 0 28px var(--marfil);
-}
 .hero__rejilla {
   display: grid;
   gap: var(--e4);
@@ -317,13 +338,6 @@ ul {
   .hero__rejilla {
     grid-template-columns: 1.35fr 0.65fr;
     gap: var(--e5);
-  }
-  /* Sin columna de imagen, el texto no debe estirarse a todo el ancho */
-  .hero--con-fondo .hero__rejilla {
-    grid-template-columns: 1fr;
-  }
-  .hero--con-fondo .hero__texto {
-    max-width: 44rem;
   }
 }
 .hero__titulo {
@@ -348,94 +362,916 @@ ul {
   margin-top: var(--e3);
 }
 
-/* ── Hero: fotos rotativas como fondo ──────────────────────── */
-.hero-carrusel {
-  position: absolute;
-  inset: 0;
-  /* La capa cubre el hero entero: debe dejar pasar clics al texto y a los
-     botones. Los puntos vuelven a capturarlos. */
-  pointer-events: none;
+/* ── Hero editorial: imagen y frase rotativas ──────────────── */
+.hero-editorial {
+  position: relative;
+  isolation: isolate;
+  /* Altura reservada desde el inicio: evita salto de layout al cargar */
+  min-height: 88vh;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  border-bottom: 1px solid var(--linea);
+  /* La cabecera flota encima (68px): sin esta holgura el eyebrow le quedaría
+     debajo. El texto va abajo, pero en pantallas cortas el hero se comprime. */
+  padding-block: calc(68px + var(--e4)) clamp(2.5rem, 6vw, var(--e5));
+  background: var(--marfil);
 }
-/* Solo el fondo va detrás del texto; los puntos siguen siendo clickeables */
-.hero-carrusel__fondo {
+.hero-editorial__fondo {
   position: absolute;
   inset: 0;
   z-index: -1;
   background: var(--marfil);
+  cursor: pointer;
 }
-/* cover: la foto llena el hero completo, sin franjas de fondo a los lados */
-.hero-carrusel__foto {
+.hero-editorial__foto {
   object-fit: cover;
   object-position: center;
   opacity: 0;
-  transition: opacity 600ms ease-in-out;
+  transition: opacity 900ms cubic-bezier(0.4, 0, 0.2, 1);
 }
-.hero-carrusel__foto.es-activa {
+.hero-editorial__foto.es-activa {
   opacity: 1;
 }
-/* Velo mínimo: la foto manda. Solo se densifica en la banda izquierda,
-   donde se apoya el texto; el resto queda casi limpio. */
-.hero-carrusel__velo {
+/* Ken Burns: solo la foto visible, y solo si hay movimiento permitido */
+.hero-editorial__foto.es-activa.con-movimiento {
+  animation: hero-ken-burns 12s ease-out forwards;
+}
+@keyframes hero-ken-burns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.04);
+  }
+}
+/* Velo: el texto se apoya siempre en la zona velada, nunca sobre foto cruda */
+.hero-editorial__velo {
   position: absolute;
   inset: 0;
   background:
     linear-gradient(
-      100deg,
-      rgba(247, 241, 230, 0.82) 0%,
-      rgba(247, 241, 230, 0.6) 30%,
-      rgba(247, 241, 230, 0.12) 55%,
-      rgba(247, 241, 230, 0) 100%
+      95deg,
+      rgba(253, 251, 247, 0.92) 0%,
+      rgba(253, 251, 247, 0.86) 28%,
+      rgba(253, 251, 247, 0.4) 46%,
+      rgba(253, 251, 247, 0) 55%
     );
 }
-@media (max-width: 61.99rem) {
-  /* En móvil el texto cruza toda la caja: el velo baja en vertical */
-  .hero-carrusel__velo {
-    background:
-      linear-gradient(
-        180deg,
-        rgba(247, 241, 230, 0.88) 0%,
-        rgba(247, 241, 230, 0.75) 55%,
-        rgba(247, 241, 230, 0.25) 100%
-      );
-  }
+.hero-editorial__cuerpo {
+  position: relative;
+  width: 100%;
+  max-width: min(48rem, 100%);
+  margin-inline-start: 0;
 }
-.hero-carrusel__puntos {
-  position: absolute;
-  bottom: var(--e2);
-  left: 0;
-  right: 0;
+/* Las tres frases ocupan la misma celda: rotan sin mover el resto */
+.hero-editorial__titulo {
+  display: grid;
+  margin: 0 0 var(--e3);
+  font-size: clamp(2.75rem, 7vw, 6rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+.hero-editorial__frase {
+  grid-area: 1 / 1;
+}
+/* .rota solo se aplica con movimiento permitido: sin él las tres frases
+   quedan visibles y apiladas en flujo normal */
+.hero-editorial__frase.rota {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 700ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 700ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hero-editorial__frase.rota.es-activa {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* Sin rotación: el mantra se lee completo, una frase por línea */
+.hero-editorial__frase:not(.rota) {
+  grid-area: auto;
+}
+.hero-editorial__descripcion {
+  max-width: 46ch;
+  color: var(--tinta);
+}
+.hero-editorial__firma {
+  margin-top: var(--e3);
+}
+.hero-editorial__acciones {
   display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  z-index: 1;
-  pointer-events: auto;
+  flex-wrap: wrap;
+  gap: var(--e2);
+  margin-top: var(--e4);
 }
-/* Punto de 8px dentro de un objetivo táctil de 44px (WCAG 2.2 AA) */
-.hero-carrusel__punto {
-  width: 44px;
+/* Indicadores de línea, abajo a la izquierda */
+.hero-editorial__indicadores {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: var(--e4);
+}
+/* Línea de 40x2px dentro de un objetivo táctil de 44px (WCAG 2.2 AA) */
+.hero-editorial__indicador {
+  width: 40px;
   height: 44px;
   padding: 0;
   border: 0;
   background: none;
   cursor: pointer;
   display: grid;
-  place-items: center;
+  align-items: center;
 }
-.hero-carrusel__punto::before {
+.hero-editorial__indicador::before {
   content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: 1px solid var(--oro-texto);
-  background: transparent;
-  transition: background-color 200ms ease;
+  grid-area: 1 / 1;
+  width: 40px;
+  height: 2px;
+  background: var(--linea);
 }
-.hero-carrusel__punto.es-activo::before {
+.hero-editorial__barra {
+  grid-area: 1 / 1;
+  width: 0;
+  height: 2px;
   background: var(--oro-texto);
 }
-.hero-carrusel__punto:focus-visible {
+/* La barra se llena durante el ciclo; al pausar se queda donde está */
+.hero-editorial__indicador.es-activo .hero-editorial__barra {
+  animation: hero-progreso linear forwards;
+}
+@keyframes hero-progreso {
+  from {
+    width: 0;
+  }
+  to {
+    width: 40px;
+  }
+}
+.hero-editorial__indicador:focus-visible {
   outline: 2px solid var(--tinta);
-  outline-offset: -8px;
+  outline-offset: 4px;
+}
+
+@media (max-width: 61.99rem) {
+  /* En vertical el velo lateral no sirve: el texto caería sobre el producto.
+     La imagen ocupa la franja superior y el texto va debajo, sobre fondo
+     sólido — contraste garantizado sin depender de la foto. */
+  .hero-editorial {
+    min-height: 0;
+    display: block;
+    padding-block: 0 var(--e4);
+  }
+  .hero-editorial__fondo {
+    position: relative;
+    height: 46vh;
+    z-index: auto;
+  }
+  /* Degradado corto que funde la base de la imagen con el fondo */
+  .hero-editorial__velo {
+    top: auto;
+    height: 80px;
+    background: linear-gradient(
+      to bottom,
+      rgba(253, 251, 247, 0) 0%,
+      rgba(253, 251, 247, 0.65) 55%,
+      var(--marfil) 100%
+    );
+  }
+  .hero-editorial__cuerpo {
+    padding-top: var(--e3);
+  }
+  /* Ancho del contenido, no de la pantalla, y alineados a la izquierda */
+  .hero-editorial__acciones {
+    justify-content: flex-start;
+  }
+  .hero-editorial__acciones .boton {
+    width: auto;
+    flex: 0 1 auto;
+  }
+  /* El fondo ya no es capa absoluta: los indicadores vuelven al flujo */
+  .hero-editorial__indicadores {
+    position: static;
+    margin-top: var(--e3);
+  }
+
+  /* Los atributos se apilan centrados; las estrellas separadoras sobran
+     cuando cada uno ocupa su propia línea */
+  .franja__lista {
+    flex-direction: column;
+    gap: 0.5rem;
+    letter-spacing: 0.14em;
+  }
+  .franja__separador {
+    display: none;
+  }
+}
+
+/* Sin movimiento: nada rota ni hace Ken Burns (el H1 ya se ve completo) */
+@media (prefers-reduced-motion: reduce) {
+  .hero-editorial__foto.es-activa.con-movimiento {
+    animation: none;
+  }
+  .hero-editorial__indicador.es-activo .hero-editorial__barra {
+    animation: none;
+    width: 40px;
+  }
+}
+
+/* ── Explora por piedra ────────────────────────────────────── */
+.piedras__cabeza {
+  text-align: center;
+  margin-bottom: var(--e4);
+}
+.piedras__cabeza .seccion__titulo {
+  margin-bottom: 0.75rem;
+}
+.piedras__enlace {
+  font-family: var(--utilidad);
+  font-size: var(--t-sm);
+  color: var(--oro-texto);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.piedras__filtros {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: var(--e4);
+}
+.piedras__pista {
+  display: flex;
+  justify-content: center;
+  gap: clamp(1.5rem, 3vw, 2.75rem);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-block: 0.25rem;
+}
+.piedras__pista::-webkit-scrollbar {
+  display: none;
+}
+/* Índice editorial: solo el nombre. Sin caja, sin borde, sin fondo. */
+.piedras__pildora {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  /* Sin caja visible, pero el objetivo táctil sigue siendo de 44px */
+  min-height: 44px;
+  padding: 0.625rem 0;
+  border: 0;
+  background: none;
+  color: var(--oro-texto);
+  font-family: var(--display);
+  font-size: clamp(1rem, 1.4vw, 1.25rem);
+  line-height: 1.2;
+  cursor: pointer;
+  transition: color 300ms ease;
+}
+.piedras__pildora:hover {
+  color: var(--tinta);
+}
+.piedras__pildora.es-activa {
+  color: var(--tinta);
+}
+.piedras__pildora:focus-visible {
+  outline: 2px solid var(--tinta);
+  outline-offset: 4px;
+}
+/* La línea se anima de 0 a 100%: es un pseudo-elemento, no text-decoration */
+.piedras__nombre {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.35rem;
+}
+.piedras__nombre::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 1px;
+  background: var(--oro);
+  transition: width 400ms ease;
+}
+.piedras__pildora.es-activa .piedras__nombre::after {
+  width: 100%;
+}
+/* Punto mate: discreto, sin degradado ni brillo */
+.piedras__gema {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gema);
+  opacity: 0.5;
+  transition: opacity 300ms ease;
+}
+.piedras__pildora.es-activa .piedras__gema {
+  opacity: 1;
+}
+.piedras__flecha {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--oro-texto);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--oro-texto);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 200ms ease, opacity 200ms ease;
+}
+.piedras__flecha:hover:not(:disabled) {
+  background: var(--superficie);
+}
+.piedras__flecha:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.piedras__flecha:focus-visible {
+  outline: 2px solid var(--tinta);
+  outline-offset: 2px;
+}
+/* Fundido al cambiar de piedra. La rejilla conserva su altura porque las
+   tarjetas tienen proporción fija: el cambio no mueve el resto de la página. */
+.piedras__contenido {
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+.piedras__contenido.es-visible {
+  opacity: 1;
+}
+/* Frase ancla validada de la piedra: display itálica con barra dorada */
+.piedras__frase {
+  margin: 0 auto var(--e4);
+  max-width: 46ch;
+  padding-left: var(--e3);
+  border-left: 2px solid var(--oro);
+  font-family: var(--display);
+  font-style: italic;
+  font-size: clamp(1.15rem, 4.5vw, 1.5rem);
+  line-height: 1.45;
+  color: var(--oro-texto);
+}
+/* minmax(0, 1fr) y no 1fr: sin el mínimo en 0 las columnas se estiran al
+   contenido y la tarjeta desborda, generando scroll horizontal en la página */
+.piedras__rejilla {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e2);
+}
+@media (min-width: 48rem) {
+  .piedras__rejilla {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--e3);
+  }
+}
+@media (min-width: 62rem) {
+  .piedras__rejilla {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.piedras__pie {
+  margin-top: var(--e4);
+  text-align: center;
+}
+
+/* Móvil: fila desplazable con el dedo, sin botones ni centrado */
+@media (max-width: 47.99rem) {
+  .piedras__cabeza {
+    text-align: left;
+    margin-bottom: var(--e3);
+  }
+  .piedras__cabeza .seccion__titulo {
+    margin-bottom: 0.5rem;
+  }
+  .piedras__filtros {
+    margin-bottom: var(--e3);
+    /* La fila se sale del contenedor hasta el borde de la pantalla, para que
+       se vea que hay más piedras. El contenedor recupera su margen abajo. */
+    margin-inline: calc(clamp(1.25rem, 4vw, 3rem) * -1);
+  }
+  .piedras__flecha {
+    display: none;
+  }
+  .piedras__pista {
+    justify-content: flex-start;
+    scroll-snap-type: x proximity;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+    /* El snap respeta el margen: la piedra no queda pegada al borde */
+    scroll-padding-inline: clamp(1.25rem, 4vw, 3rem);
+    gap: 1.5rem;
+  }
+  .piedras__frase {
+    margin-left: 0;
+    margin-bottom: var(--e3);
+  }
+  .piedras__pie {
+    margin-top: var(--e3);
+  }
+}
+
+/* ── Explora por colección: círculos con fotografía ────────── */
+.colecciones {
+  padding-block: var(--e6);
+}
+.colecciones__cabeza {
+  text-align: center;
+  margin-bottom: var(--e4);
+}
+.colecciones__cabeza .seccion__titulo {
+  margin-bottom: 0;
+}
+.colecciones__filtros {
+  margin-bottom: var(--e4);
+}
+.colecciones__pista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-block: 0.25rem;
+}
+.colecciones__pista::-webkit-scrollbar {
+  display: none;
+}
+.colecciones__opcion {
+  flex: 0 0 auto;
+  text-decoration: none;
+  scroll-snap-align: start;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--oro-texto);
+  cursor: pointer;
+  transition: color 400ms ease;
+}
+.colecciones__opcion:hover,
+.colecciones__opcion.es-activa {
+  color: var(--tinta);
+}
+.colecciones__opcion:focus-visible {
+  outline: 2px solid var(--tinta);
+  outline-offset: 4px;
+  border-radius: var(--radio);
+}
+.colecciones__circulo {
+  position: relative;
+  display: block;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--marfil-2);
+  opacity: 0.55;
+  transition: opacity 400ms ease, box-shadow 400ms ease;
+}
+.colecciones__opcion:hover .colecciones__circulo {
+  opacity: 0.8;
+}
+/* El anillo se separa del borde con un primer halo del color del fondo */
+.colecciones__opcion.es-activa .colecciones__circulo {
+  opacity: 1;
+  box-shadow:
+    0 0 0 3px var(--superficie),
+    0 0 0 5px var(--oro);
+}
+.colecciones__foto {
+  object-fit: cover;
+}
+.colecciones__nombre {
+  font-family: var(--display);
+  font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+  line-height: 1.2;
+}
+.colecciones__presentacion {
+  margin-bottom: var(--e4);
+  max-width: 60ch;
+}
+/* minmax(0, 1fr): sin el mínimo en 0 la tarjeta desborda la columna */
+.colecciones__rejilla {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e2);
+}
+@media (min-width: 48rem) {
+  .colecciones__rejilla {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--e3);
+  }
+}
+@media (min-width: 62rem) {
+  .colecciones__rejilla {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.colecciones__pie {
+  margin-top: var(--e4);
+  text-align: center;
+}
+
+/* Móvil: fila desplazable con el dedo, sin botones, alineada a la izquierda */
+@media (max-width: 47.99rem) {
+  .colecciones {
+    padding-block: var(--e5);
+  }
+  .colecciones__cabeza {
+    text-align: left;
+    margin-bottom: var(--e3);
+  }
+  .colecciones__filtros {
+    margin-bottom: var(--e3);
+    /* Bleed hasta el borde: se ve que hay más colecciones */
+    margin-inline: calc(clamp(1.25rem, 4vw, 3rem) * -1);
+  }
+  .colecciones__pista {
+    justify-content: flex-start;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+    scroll-padding-inline: clamp(1.25rem, 4vw, 3rem);
+    gap: 1.25rem;
+  }
+  .colecciones__circulo {
+    width: 64px;
+    height: 64px;
+  }
+  .colecciones__presentacion {
+    margin-bottom: var(--e3);
+  }
+  .colecciones__pie {
+    margin-top: var(--e3);
+  }
+}
+
+/* ── Más allá de la pieza: artículos ───────────────────────── */
+.articulos {
+  overflow: hidden;
+  --sangria-articulos: max(
+    clamp(1.25rem, 4vw, 3rem),
+    calc((100vw - var(--ancho)) / 2 + clamp(1.25rem, 4vw, 3rem))
+  );
+}
+.articulos__cabeza {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--e3);
+  margin-bottom: var(--e4);
+}
+.articulos__titulo {
+  margin-bottom: 0.5rem;
+}
+.articulos__ver-todos {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.7rem 1.4rem;
+  border: 1px solid var(--oro-texto);
+  border-radius: 999px;
+  color: var(--oro-texto);
+  font-family: var(--utilidad);
+  font-size: var(--t-sm);
+  text-decoration: none;
+  transition: background-color 200ms ease;
+}
+.articulos__ver-todos:hover {
+  background: var(--superficie);
+}
+.articulos__pista {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0 var(--sangria-articulos) var(--e2);
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--sangria-articulos);
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.articulos__pista::-webkit-scrollbar {
+  display: none;
+}
+.articulos__celda {
+  flex: 0 0 auto;
+  /* 3 visibles en escritorio; en móvil 1.2 para insinuar la siguiente */
+  width: min(22rem, 76vw);
+  min-width: 0;
+  scroll-snap-align: start;
+}
+.articulo {
+  display: block;
+  color: var(--tinta);
+  text-decoration: none;
+}
+.articulo__marco {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4.2;
+  overflow: hidden;
+  border-radius: 20px;
+  background: linear-gradient(150deg, var(--marfil-2), var(--superficie));
+  box-shadow: 0 20px 50px -18px rgba(74, 58, 34, 0.35);
+  transition:
+    box-shadow 500ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.articulo:hover .articulo__marco,
+.articulo:focus-visible .articulo__marco {
+  box-shadow: 0 28px 64px -18px rgba(74, 58, 34, 0.42);
+  transform: translateY(-6px);
+}
+.articulo__foto {
+  object-fit: cover;
+  transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.articulo:hover .articulo__foto,
+.articulo:focus-visible .articulo__foto {
+  transform: scale(1.04);
+}
+/* Velo del 45% inferior. Las fotos van sobre fondo blanco: al 0.65 el
+   titular en marfil daba 3.81:1. Al 0.78 llega a 5.49:1 sobre blanco. */
+.articulo__velo {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(74, 58, 34, 0.45) 72%,
+    rgba(74, 58, 34, 0.78) 100%
+  );
+}
+.articulo__pie {
+  position: absolute;
+  left: 1.5rem;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+/* Marco vacío: sin foto el texto se apoya en la superficie, no en un velo */
+.articulo__marco--vacio {
+  background: var(--superficie);
+  display: flex;
+  align-items: flex-end;
+}
+.articulo__categoria {
+  font-family: var(--utilidad);
+  font-size: var(--t-xs);
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--oro-texto);
+}
+.articulo__titulo {
+  font-family: var(--display);
+  font-size: clamp(1.25rem, 1.8vw, 1.6rem);
+  line-height: 1.2;
+  color: var(--tinta);
+}
+.articulo__leer {
+  font-family: var(--utilidad);
+  font-size: var(--t-sm);
+  color: var(--oro-texto);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  margin-top: 0.25rem;
+}
+.articulo:focus-visible {
+  outline: 2px solid var(--tinta);
+  outline-offset: 4px;
+}
+
+/* Índice de artículos y página de artículo */
+.indice-articulos__fila {
+  padding-block: var(--e3);
+  border-bottom: 1px solid var(--linea);
+}
+.indice-articulos__titulo {
+  font-size: var(--t-lg);
+}
+.indice-articulos__enlace {
+  color: var(--tinta);
+  text-decoration: none;
+}
+.indice-articulos__enlace:hover {
+  color: var(--oro-texto);
+}
+.articulo-pagina__marco {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  margin-block: var(--e4);
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(150deg, var(--marfil-2), var(--superficie));
+}
+.articulo-pagina__foto {
+  object-fit: cover;
+}
+
+@media (max-width: 47.99rem) {
+  .articulos__cabeza {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: var(--e3);
+  }
+}
+
+/* ── Categorías: fila con desplazamiento horizontal ────────── */
+.categorias {
+  overflow: hidden;
+  /* Las tarjetas dominan: menos aire vertical que en el resto de secciones */
+  padding-block: clamp(2rem, 5vw, var(--e5));
+  /* Margen izquierdo real del .contenedor: alinea la fila con el encabezado
+     sin depender de porcentajes, que se miden contra la pista */
+  --sangria-carrusel: max(
+    clamp(1.25rem, 4vw, 3rem),
+    calc((100vw - var(--ancho)) / 2 + clamp(1.25rem, 4vw, 3rem))
+  );
+}
+.categorias__cabeza {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--e3);
+  margin-bottom: var(--e3);
+}
+.categorias__titulo {
+  margin-bottom: 0;
+}
+.categorias__carrusel {
+  position: relative;
+}
+.categorias__pista {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0 0 var(--e2);
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  /* Barra oculta pero el desplazamiento sigue funcionando */
+  scrollbar-width: none;
+  /* Sangrado: la fila arranca alineada al encabezado y se desborda por la
+     derecha hasta el borde de la ventana, así la última tarjeta queda
+     cortada e insinúa continuidad. El padding final garantiza recorrido
+     aunque haya pocas tarjetas: sin él, con 3 no habría nada que desplazar. */
+  padding-inline-start: var(--sangria-carrusel);
+  padding-inline-end: var(--sangria-carrusel);
+}
+.categorias__pista::-webkit-scrollbar {
+  display: none;
+}
+.categorias__celda {
+  flex: 0 0 auto;
+  /* Ancho derivado del alto para sostener la proporción 3:4 */
+  width: calc(min(64vh, 620px) * 3 / 4);
+  max-width: 78vw;
+  scroll-snap-align: start;
+}
+.categoria {
+  display: block;
+  color: var(--tinta);
+  text-decoration: none;
+}
+/* Sin borde: la tarjeta flota. La personalidad la dan la sombra y la foto. */
+.categoria__marco {
+  position: relative;
+  display: block;
+  height: min(64vh, 620px);
+  overflow: hidden;
+  border-radius: 20px;
+  background: linear-gradient(150deg, var(--marfil-2), var(--superficie));
+  box-shadow: 0 20px 50px -18px rgba(74, 58, 34, 0.35);
+  transition:
+    box-shadow 500ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.categoria:hover .categoria__marco,
+.categoria:focus-visible .categoria__marco {
+  box-shadow: 0 28px 64px -18px rgba(74, 58, 34, 0.42);
+  transform: translateY(-6px);
+}
+.categoria__foto {
+  object-fit: cover;
+  /* El marco no crece: solo la imagen, contenida por overflow hidden */
+  transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.categoria:hover .categoria__foto,
+.categoria:focus-visible .categoria__foto {
+  transform: scale(1.04);
+}
+/* Velo del 40% inferior. Las fotos de producto van sobre fondo blanco
+   (Topos es casi blanco donde cae el texto): al 0.55 el nombre daba 2.94:1
+   y fallaba AA. La base sube a 0.78, que da 5.49:1 sobre blanco puro. */
+.categoria__velo {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 60%,
+    rgba(74, 58, 34, 0.45) 78%,
+    rgba(74, 58, 34, 0.78) 100%
+  );
+}
+.categoria__pie {
+  position: absolute;
+  left: 1.5rem;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.875rem;
+}
+.categoria__nombre {
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  line-height: 1.1;
+  color: var(--marfil);
+}
+/* Píldora: <span> con apariencia de botón. La tarjeta entera ya es el
+   enlace; anidar otro <a> rompería la semántica y el recorrido con Tab. */
+.categoria__pildora {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  border-radius: 999px;
+  background: var(--tinta);
+  color: var(--marfil);
+  font-family: var(--utilidad);
+  font-size: var(--t-sm);
+  line-height: 1;
+  transition: gap 300ms ease;
+}
+.categoria:hover .categoria__pildora {
+  gap: 0.8rem;
+}
+.categoria:focus-visible {
+  outline: 2px solid var(--tinta);
+  outline-offset: 4px;
+}
+.categorias__controles {
+  display: none;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+.categorias__flecha {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--oro-texto);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--oro-texto);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 200ms ease, opacity 200ms ease;
+}
+.categorias__flecha:hover:not(:disabled) {
+  background: var(--superficie);
+}
+.categorias__flecha:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.categorias__flecha:focus-visible {
+  outline: 2px solid var(--tinta);
+  outline-offset: 2px;
+}
+
+@media (min-width: 62rem) {
+  .categorias__controles {
+    display: flex;
+  }
 }
 
 /* Logotipo del hero */
@@ -482,99 +1318,14 @@ ul {
 }
 .seccion__cabeza {
   max-width: 52ch;
-  margin-bottom: var(--e4);
+  margin-bottom: var(--e5);
 }
 .seccion__titulo {
-  font-size: var(--t-xl);
-}
-
-/* ── El piedrero: elemento firma ───────────────────────────── */
-/* Fondo que se tinta con la piedra elegida. Muy sutil: el lujo aquí
-   está en la contención, no en el color. */
-.piedrero {
-  position: relative;
-  isolation: isolate;
-  border: 1px solid var(--linea);
-  background: var(--superficie);
-  padding: clamp(1.5rem, 4vw, var(--e4));
-}
-.piedrero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: radial-gradient(
-    120% 90% at 12% 0%,
-    color-mix(in srgb, var(--piedra) 14%, transparent),
-    transparent 62%
-  );
-  transition: background 0.5s ease;
-}
-.piedrero__lista {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--e2);
+  font-size: clamp(2.25rem, 4.5vw, 3.75rem);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--tinta);
   margin-bottom: var(--e4);
-}
-.piedra-boton {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  min-height: 48px;
-  padding: 0.5rem 1rem 0.5rem 0.6rem;
-  background: transparent;
-  border: 1px solid var(--oro-texto);
-  border-radius: 999px;
-  font-family: var(--utilidad);
-  font-size: var(--t-xs);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--tinta);
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-.piedra-boton:hover {
-  background: rgba(126, 96, 57, 0.08);
-}
-.piedra-boton[aria-pressed="true"] {
-  background: var(--tinta);
-  border-color: var(--tinta);
-  color: var(--marfil);
-}
-.piedra-boton__gema {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.22);
-  background: radial-gradient(
-    circle at 34% 30%,
-    color-mix(in srgb, var(--gema) 55%, white),
-    var(--gema)
-  );
-}
-.piedrero__panel {
-  display: grid;
-  gap: var(--e3);
-}
-.piedrero__nombre {
-  font-size: var(--t-lg);
-}
-.piedrero__frase {
-  font-family: var(--display);
-  font-size: var(--t-lg);
-  font-style: italic;
-  line-height: 1.4;
-  color: var(--tinta);
-  border-left: 2px solid var(--oro);
-  padding-left: var(--e3);
-  max-width: 34ch;
-  margin: 0;
-}
-.piedrero__simboliza {
-  font-family: var(--utilidad);
-  font-size: var(--t-sm);
-  letter-spacing: 0.1em;
-  color: var(--oro-texto);
 }
 
 /* ── Bloques de valor ──────────────────────────────────────── */
@@ -670,33 +1421,50 @@ ul {
   grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
 }
 
+/* Mismo lenguaje visual que las tarjetas de categoría: sin borde, esquinas
+   de 20px y sombra difusa. Un solo estilo de tarjeta en todo el sitio. */
 .pieza {
   display: flex;
   flex-direction: column;
   text-align: left;
   background: var(--superficie);
-  border: 1px solid var(--linea);
-  border-radius: var(--radio);
+  border-radius: 20px;
   padding: 0;
   cursor: pointer;
+  /* Hijo de grid: sin min-width 0 el contenido largo estira la columna */
+  min-width: 0;
   overflow: hidden;
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 20px 50px -18px rgba(74, 58, 34, 0.35);
+  transition:
+    box-shadow 500ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* La tarjeta es un <Link>: sin esto hereda el azul del navegador */
+  color: var(--tinta);
+  text-decoration: none;
 }
-.pieza:hover {
-  border-color: var(--oro-texto);
-  transform: translateY(-2px);
+.pieza:hover,
+.pieza:focus-visible {
+  box-shadow: 0 28px 64px -18px rgba(74, 58, 34, 0.42);
+  transform: translateY(-6px);
+}
+.pieza:hover .pieza__foto,
+.pieza:focus-visible .pieza__foto {
+  transform: scale(1.04);
 }
 .pieza__marco {
   position: relative;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 3 / 4;
   background: linear-gradient(150deg, var(--marfil-2), var(--superficie));
   display: grid;
   place-items: center;
+  overflow: hidden;
 }
 .pieza__foto {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* El marco no crece: solo la imagen, contenida por overflow hidden */
+  transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 .pieza__sinfoto {
   font-family: var(--display);
@@ -742,6 +1510,7 @@ ul {
 .pieza__nombre {
   font-size: var(--t-md);
   margin-bottom: 0.35rem;
+  color: var(--tinta);
 }
 .pieza__frase {
   font-family: var(--display);
@@ -876,24 +1645,22 @@ ul {
 }
 
 /* ── Cierre y pie ──────────────────────────────────────────── */
+/* Cierre sobrio: sin caja oscura, alineado a la izquierda como el resto */
 .cierre {
-  background: var(--tinta);
-  color: var(--marfil);
-  padding-block: clamp(3rem, 8vw, var(--e6));
-  text-align: center;
+  background: var(--marfil-2);
+  padding-block: clamp(3rem, 8vw, var(--e5));
 }
 .cierre__titulo {
-  font-size: var(--t-xl);
-  max-width: 20ch;
-  margin-inline: auto;
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  line-height: 1.15;
+  max-width: 24ch;
+  color: var(--tinta);
 }
-.cierre__texto {
-  font-family: var(--display);
-  font-size: var(--t-md);
-  margin-block: var(--e2) var(--e3);
-  color: var(--marfil-2);
-  max-width: 42ch;
-  margin-inline: auto;
+.cierre__firma {
+  margin-top: var(--e2);
+}
+.cierre__boton {
+  margin-top: var(--e3);
 }
 .cierre .boton--primario {
   background: var(--marfil);
@@ -1063,11 +1830,61 @@ ul {
     margin-top: var(--e3);
   }
   /* En móvil la cabecera aprieta: queda el isotipo, el nombre se lee en el hero */
-  .marca__texto {
-    display: none;
-  }
+  /* Con el menú recogido en el botón hay espacio para la firma completa.
+     El isotipo sube a 38px: por debajo de eso no se lee. */
   .marca__isotipo {
-    height: 2.5rem;
+    height: 38px;
+  }
+  .marca__nombre {
+    font-size: 0.95rem;
+    letter-spacing: 0.28em;
+  }
+
+  /* Menú recogido: "PUNTOS DE LUZ" partía la cabecera en dos líneas */
+  .cabecera__boton-menu {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--linea);
+    border-radius: var(--radio);
+    background: transparent;
+    color: var(--tinta);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .cabecera__boton-menu:focus-visible {
+    outline: 2px solid var(--tinta);
+    outline-offset: 2px;
+  }
+  .cabecera__panel {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: clamp(1.25rem, 4vw, 3rem);
+    left: clamp(1.25rem, 4vw, 3rem);
+    background: var(--marfil);
+    border: 1px solid var(--linea);
+    border-radius: var(--radio);
+    box-shadow: 0 20px 50px -18px rgba(74, 58, 34, 0.35);
+    padding: var(--e2);
+  }
+  .cabecera__panel.es-abierto {
+    display: block;
+  }
+  .cabecera__panel .cabecera__nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+  .cabecera__panel .cabecera__enlace {
+    padding: 0.9rem 0.5rem;
+    border-bottom: 1px solid var(--linea);
+  }
+  .cabecera__panel .cabecera__enlace:last-child {
+    border-bottom: none;
   }
 }
 

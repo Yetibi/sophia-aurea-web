@@ -2,7 +2,9 @@ import Link from "next/link";
 import { MARCA } from "@/lib/site";
 import { enlaceWhatsAppGeneral } from "@/lib/comercio";
 import { obtenerPiezasSeguro, tiposDePiezaDisponibles } from "@/lib/productos";
-import { Wordmark, IconoWhatsApp, Estrella } from "./Marca";
+import { Wordmark, IconoWhatsApp } from "./Marca";
+import { CabeceraFlotante } from "./CabeceraFlotante";
+import { MenuMovil } from "./MenuMovil";
 
 /**
  * Cabecera con navegación por TIPO DE PIEZA, generada desde el catálogo:
@@ -14,10 +16,10 @@ export async function Cabecera() {
   const tipos = tiposDePiezaDisponibles(piezas);
 
   return (
-    <header className="cabecera">
+    <CabeceraFlotante>
       <div className="contenedor cabecera__fila">
         <Wordmark />
-        <nav aria-label="Principal" className="cabecera__nav">
+        <MenuMovil>
           {tipos.map((t) => (
             <Link key={t.slug} href={`/${t.slug}`} className="cabecera__enlace">
               {t.etiqueta}
@@ -26,27 +28,22 @@ export async function Cabecera() {
           <Link href="/catalogo" className="cabecera__enlace">
             Disponibilidad
           </Link>
-        </nav>
+        </MenuMovil>
       </div>
-    </header>
+    </CabeceraFlotante>
   );
 }
 
 export function Cierre() {
   return (
-    <section className="cierre sobre-tinta" aria-labelledby="cierre-titulo">
+    <section className="cierre" aria-labelledby="cierre-titulo">
       <div className="contenedor">
-        <p style={{ color: "var(--oro)", display: "flex", justifyContent: "center" }}>
-          <Estrella tamano={20} />
-        </p>
         <h2 id="cierre-titulo" className="cierre__titulo">
-          ¿Buscas una pieza para alguien, o para ti?
+          Cuéntanos el momento que quieres acompañar.
         </h2>
-        <p className="cierre__texto">
-          Cuéntanos el momento que quieres acompañar y te ayudamos a elegir la piedra.
-        </p>
+        <p className="firma cierre__firma">{MARCA.nombre}</p>
         <a
-          className="boton boton--primario"
+          className="boton boton--whatsapp cierre__boton"
           href={enlaceWhatsAppGeneral("cierre")}
           target="_blank"
           rel="noopener noreferrer"
