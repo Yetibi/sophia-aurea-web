@@ -112,8 +112,10 @@ export default async function Portada() {
   const gruposPiedra = agruparPorPiedra(piezas);
   const gruposColeccion = agruparPorColeccion(piezas);
 
-  // Sin foto: las tarjetas quedan en blanco hasta tener fotografía propia
-  const tarjetasArticulos = ARTICULOS.map((a) => ({
+  // Solo los artículos ya escritos: los que tienen `cuerpo` vacío están en
+  // preparación y no se anuncian en el home. Sin foto: las tarjetas quedan en
+  // blanco hasta tener fotografía propia.
+  const tarjetasArticulos = ARTICULOS.filter((a) => a.cuerpo).map((a) => ({
     slug: a.slug,
     categoria: a.categoria,
     titulo: a.titulo,
@@ -235,22 +237,27 @@ export default async function Portada() {
         </section>
       ) : null}
 
-      <section className="seccion articulos" aria-labelledby="articulos-titulo">
-        <div className="contenedor articulos__cabeza">
-          <div>
-            <h2 id="articulos-titulo" className="seccion__titulo articulos__titulo">
-              Lo que debes saber
-            </h2>
-            <p className="prosa">
-              Cuidado, símbolos y el oficio detrás de cada joya.
-            </p>
+      {/* La sección aparece sola cuando haya al menos un artículo con texto:
+          enlazar tarjetas a páginas "en preparación" resta confianza en la
+          página que debe generarla. Basta llenar `cuerpo` en articulos.ts. */}
+      {tarjetasArticulos.length > 0 ? (
+        <section className="seccion articulos" aria-labelledby="articulos-titulo">
+          <div className="contenedor articulos__cabeza">
+            <div>
+              <h2 id="articulos-titulo" className="seccion__titulo articulos__titulo">
+                Lo que debes saber
+              </h2>
+              <p className="prosa">
+                Cuidado, símbolos y el oficio detrás de cada joya.
+              </p>
+            </div>
+            <Link className="articulos__ver-todos" href="/mas-alla">
+              Ver todos los artículos <span aria-hidden="true">→</span>
+            </Link>
           </div>
-          <Link className="articulos__ver-todos" href="/mas-alla">
-            Ver todos los artículos <span aria-hidden="true">→</span>
-          </Link>
-        </div>
-        <CarruselArticulos articulos={tarjetasArticulos} />
-      </section>
+          <CarruselArticulos articulos={tarjetasArticulos} />
+        </section>
+      ) : null}
 
       <Cierre />
     </>

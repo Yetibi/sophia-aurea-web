@@ -62,6 +62,9 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  /* La cabecera fija mide 68px: sin esta holgura, al llegar con Tab o a un
+     ancla el elemento queda debajo de ella (WCAG 2.2 AA, foco no oculto). */
+  scroll-padding-top: calc(68px + var(--e2));
 }
 body {
   margin: 0;
@@ -278,7 +281,8 @@ ul {
   text-transform: uppercase;
   color: var(--tinta);
   text-decoration: none;
-  padding: 0.75rem 0.25rem;
+  /* 44px de alto mínimo (WCAG 2.5.5): con 0.75rem quedaba en 43px */
+  padding: 0.8rem 0.25rem;
   border-bottom: 1px solid transparent;
 }
 .cabecera__enlace:hover,
@@ -291,6 +295,8 @@ ul {
   display: inline-flex;
   align-items: center;
   gap: 0.625rem;
+  /* Es el enlace al inicio: necesita el objetivo táctil completo */
+  min-height: 44px;
   text-decoration: none;
   color: var(--tinta);
 }
@@ -418,11 +424,13 @@ ul {
       rgba(253, 251, 247, 0) 55%
     );
 }
+/* Conserva el ancho y el centrado de .contenedor para no romper el eje de
+   lectura del resto del home; el texto se limita dentro, no el contenedor. */
 .hero-editorial__cuerpo {
   position: relative;
-  width: 100%;
-  max-width: min(48rem, 100%);
-  margin-inline-start: 0;
+}
+.hero-editorial__cuerpo > * {
+  max-width: 48rem;
 }
 /* Las tres frases ocupan la misma celda: rotan sin mover el resto */
 .hero-editorial__titulo {
@@ -577,9 +585,49 @@ ul {
   }
 }
 
+/* Ayuda visual para las filas desplazables. Oculta en escritorio, donde los
+   botones ‹ › ya indican el recorrido; aria-hidden porque un lector de
+   pantalla recorre la lista sin necesitar el gesto. */
+.pista-desliza {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  font-family: var(--utilidad);
+  font-size: var(--t-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--oro-texto);
+}
+/* La flecha se desplaza en bucle: sugiere la dirección del gesto */
+.pista-desliza__flecha {
+  display: inline-block;
+  animation: pista-vaiven 1.8s ease-in-out infinite;
+}
+@keyframes pista-vaiven {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
+@media (max-width: 47.99rem) {
+  .pista-desliza {
+    display: inline-flex;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pista-desliza__flecha {
+    animation: none;
+  }
+}
+
 /* ── Explora por piedra ────────────────────────────────────── */
+/* Alineado a la izquierda como el resto de secciones del home: centrarlo
+   rompía el eje de lectura que marcan el hero, categorías y artículos. */
 .piedras__cabeza {
-  text-align: center;
   margin-bottom: var(--e4);
 }
 .piedras__cabeza .seccion__titulo {
@@ -595,13 +643,14 @@ ul {
 .piedras__filtros {
   display: flex;
   align-items: center;
-  justify-content: center;
+  /* Arranca en el mismo eje que el encabezado, no centrada */
+  justify-content: flex-start;
   gap: 0.75rem;
   margin-bottom: var(--e4);
 }
 .piedras__pista {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   gap: clamp(1.5rem, 3vw, 2.75rem);
   overflow-x: auto;
   scroll-snap-type: x mandatory;
@@ -711,7 +760,7 @@ ul {
 }
 /* Frase ancla validada de la piedra: display itálica con barra dorada */
 .piedras__frase {
-  margin: 0 auto var(--e4);
+  margin: 0 0 var(--e4);
   max-width: 46ch;
   padding-left: var(--e3);
   border-left: 2px solid var(--oro);
@@ -741,7 +790,6 @@ ul {
 }
 .piedras__pie {
   margin-top: var(--e4);
-  text-align: center;
 }
 
 /* Móvil: fila desplazable con el dedo, sin botones ni centrado */
@@ -758,6 +806,21 @@ ul {
     /* La fila se sale del contenedor hasta el borde de la pantalla, para que
        se vea que hay más piedras. El contenedor recupera su margen abajo. */
     margin-inline: calc(clamp(1.25rem, 4vw, 3rem) * -1);
+    /* Degradado sobre el borde derecho: refuerza el corte y comunica que la
+       fila sigue. --fundido lo fija cada sección según su propio fondo. */
+    position: relative;
+    --fundido: var(--marfil-2);
+  }
+  .piedras__filtros::after,
+  .colecciones__filtros::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 3rem;
+    pointer-events: none;
+    background: linear-gradient(to right, transparent, var(--fundido));
   }
   .piedras__flecha {
     display: none;
@@ -768,7 +831,10 @@ ul {
     padding-inline: clamp(1.25rem, 4vw, 3rem);
     /* El snap respeta el margen: la piedra no queda pegada al borde */
     scroll-padding-inline: clamp(1.25rem, 4vw, 3rem);
-    gap: 1.5rem;
+    /* Separación amplia para que ninguna piedra caiga justo en el borde:
+       con gap menor, la última cabía completa y la fila parecía terminada. */
+    gap: 2.75rem;
+    padding-inline-end: 0;
   }
   .piedras__frase {
     margin-left: 0;
@@ -783,8 +849,8 @@ ul {
 .colecciones {
   padding-block: var(--e6);
 }
+/* Mismo eje de lectura que las demás secciones del home */
 .colecciones__cabeza {
-  text-align: center;
   margin-bottom: var(--e4);
 }
 .colecciones__cabeza .seccion__titulo {
@@ -798,7 +864,7 @@ ul {
   margin: 0;
   padding: 0;
   display: flex;
-  /* Reparten el ancho completo del contenedor en vez de agruparse al centro */
+  /* Reparten el ancho completo del contenedor desde el eje izquierdo */
   justify-content: space-between;
   gap: clamp(1rem, 2vw, 2rem);
   overflow-x: auto;
@@ -899,7 +965,6 @@ ul {
 }
 .colecciones__pie {
   margin-top: var(--e4);
-  text-align: center;
 }
 
 /* Móvil: fila desplazable con el dedo, sin botones, alineada a la izquierda */
@@ -915,20 +980,28 @@ ul {
     margin-bottom: var(--e3);
     /* Bleed hasta el borde: se ve que hay más colecciones */
     margin-inline: calc(clamp(1.25rem, 4vw, 3rem) * -1);
+    position: relative;
+    /* Esta sección va sobre el fondo base, no sobre el velado */
+    --fundido: var(--marfil);
   }
   .colecciones__pista {
     justify-content: flex-start;
     padding-inline: clamp(1.25rem, 4vw, 3rem);
     scroll-padding-inline: clamp(1.25rem, 4vw, 3rem);
     gap: 1rem;
+    /* Sin padding final: el círculo se corta contra el borde y anuncia
+       que la fila continúa. */
+    padding-inline-end: 0;
   }
   /* En móvil no se estiran: conservan su tamaño y la fila se desplaza,
      dejando ver una parte del siguiente círculo */
   .colecciones__opcion {
     flex: 0 0 auto;
   }
+  /* 45vw: dos círculos y el tercero asomando. Con 40vw los dos primeros
+     cabían justos y el borde quedaba limpio, sin indicio de que hay más. */
   .colecciones__circulo {
-    width: 40vw;
+    width: 45vw;
     max-width: 200px;
   }
   .colecciones__presentacion {
@@ -1375,16 +1448,22 @@ ul {
 }
 
 /* ── Catálogo ──────────────────────────────────────────────── */
+/* Panel compacto: en móvil dos grupos de filtros llegaban al 49% del alto
+   visible, empujando las piezas fuera de pantalla. */
 .filtros {
   border: 1px solid var(--linea);
+  border-radius: 20px;
   background: var(--superficie);
-  padding: var(--e3);
-  margin-bottom: var(--e4);
+  padding: var(--e2) var(--e3);
+  margin-bottom: var(--e3);
 }
 .filtros__grupo {
   border: 0;
   padding: 0;
-  margin: 0 0 var(--e3);
+  margin: 0 0 var(--e2);
+}
+.filtros__grupo:last-child {
+  margin-bottom: 0;
 }
 .filtros__grupo:last-of-type {
   margin-bottom: 0;
@@ -1397,22 +1476,25 @@ ul {
   text-transform: uppercase;
   color: var(--oro-texto);
   padding: 0;
-  margin-bottom: var(--e2);
+  margin-bottom: 0.5rem;
 }
 .filtros__opciones {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--e1);
+  /* 4px de separación: compensa los 40px del chip para el objetivo táctil */
+  gap: 4px;
 }
+/* 40px de alto con 4px de separación entre chips: cumple el objetivo táctil
+   de 44px sin que dos grupos de filtros se coman media pantalla en móvil. */
 .chip {
-  min-height: 44px;
-  padding: 0.4rem 1rem;
+  min-height: 40px;
+  padding: 0.35rem 0.9rem;
   background: transparent;
   border: 1px solid var(--oro-texto);
   border-radius: 999px;
   font-family: var(--utilidad);
   font-size: var(--t-xs);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   color: var(--tinta);
   cursor: pointer;
 }
@@ -1718,7 +1800,11 @@ ul {
   color: var(--tinta);
   line-height: 1.9;
 }
+/* Objetivo táctil de 44px sin separar visualmente las líneas del pie:
+   el padding vertical crece hacia dentro del interlineado (WCAG 2.5.5). */
 .pie__enlace {
+  display: inline-block;
+  padding-block: 0.75rem;
   color: var(--oro-texto);
   text-decoration: underline;
   text-underline-offset: 3px;

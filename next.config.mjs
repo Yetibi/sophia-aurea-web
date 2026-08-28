@@ -6,10 +6,10 @@ const nextConfig = {
     minimumCacheTTL: 86400,
   },
   async rewrites() {
-    // Si el catálogo en producción vive en OTRO proyecto de Vercel, define
-    // CATALOGO_EXTERNO_URL (p. ej. https://catalogo-sophia.vercel.app) y este
-    // sitio reenvía /catalogo hacia allá sin tocarlo. Si el catálogo es la
-    // página local de este mismo proyecto, deja la variable vacía.
+    // El catálogo operativo es OTRO proyecto de Vercel y vive en su propio
+    // subdominio (catalogo.sophiaaurea.co): este sitio solo reenvía /catalogo
+    // hacia allá. Nunca apuntar CATALOGO_EXTERNO_URL al dominio raíz — cuando
+    // sophiaaurea.co sirva este proyecto, el reenvío se llamaría a sí mismo.
     const externo = process.env.CATALOGO_EXTERNO_URL;
     if (!externo) return [];
     return [

@@ -39,18 +39,25 @@ function GrupoChips({
   );
 }
 
-/** Rejilla de una categoría (p. ej. Dijes) con filtros por piedra y colección. */
+/**
+ * Rejilla de una categoría (p. ej. Dijes) con filtros por piedra y figura.
+ *
+ * No se filtra por colección: dentro de un mismo tipo de pieza la colección
+ * aporta poco y duplica la navegación que ya existe en el home. La figura sí
+ * distingue (elefante, tortuga, caballo de mar…), y el grupo se oculta solo
+ * cuando la categoría tiene una única figura, como Topos o Puntos de luz.
+ */
 export function CategoriaCliente({ piezas }: { piezas: Pieza[] }) {
   const [piedra, setPiedra] = useState(TODAS);
-  const [coleccion, setColeccion] = useState(TODAS);
+  const [figura, setFigura] = useState(TODAS);
 
   const piedras = useMemo(
     () => [...new Set(piezas.map((p) => p.piedra).filter(Boolean))].sort(ordenarPorPiedra),
     [piezas],
   );
-  const colecciones = useMemo(
+  const figuras = useMemo(
     () =>
-      [...new Set(piezas.map((p) => p.coleccion).filter(Boolean))].sort((a, b) =>
+      [...new Set(piezas.map((p) => p.figura).filter(Boolean))].sort((a, b) =>
         a.localeCompare(b, "es"),
       ),
     [piezas],
@@ -61,21 +68,16 @@ export function CategoriaCliente({ piezas }: { piezas: Pieza[] }) {
       piezas.filter(
         (p) =>
           (piedra === TODAS || p.piedra === piedra) &&
-          (coleccion === TODAS || p.coleccion === coleccion),
+          (figura === TODAS || p.figura === figura),
       ),
-    [piezas, piedra, coleccion],
+    [piezas, piedra, figura],
   );
 
   return (
     <>
       <div className="filtros">
         <GrupoChips leyenda="Piedra" opciones={piedras} valor={piedra} onCambio={setPiedra} />
-        <GrupoChips
-          leyenda="Colección"
-          opciones={colecciones}
-          valor={coleccion}
-          onCambio={setColeccion}
-        />
+        <GrupoChips leyenda="Figura" opciones={figuras} valor={figura} onCambio={setFigura} />
       </div>
 
       <p className="conteo" role="status">
@@ -94,7 +96,7 @@ export function CategoriaCliente({ piezas }: { piezas: Pieza[] }) {
               className="chip"
               onClick={() => {
                 setPiedra(TODAS);
-                setColeccion(TODAS);
+                setFigura(TODAS);
               }}
             >
               Ver todas

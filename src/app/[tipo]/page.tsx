@@ -103,7 +103,7 @@ export default async function PaginaCategoria({ params }: Props) {
               {info.etiqueta}
             </h1>
             <p className="prosa" style={{ marginTop: "1rem" }}>
-              Cada pieza guarda un símbolo. Elige por la piedra, la figura o la colección, y
+              Cada pieza guarda un símbolo. Elige por la piedra o la figura, y
               escríbenos para conocer disponibilidad y tiempos de entrega.
             </p>
           </div>

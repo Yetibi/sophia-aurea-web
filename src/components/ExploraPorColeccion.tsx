@@ -31,6 +31,13 @@ export function ExploraPorColeccion({ grupos }: { grupos: GrupoColeccion[] }) {
         <h2 id="colecciones-titulo" className="seccion__titulo">
           Explora por colección
         </h2>
+        {/* Solo se muestra en móvil y solo si hay más de las que caben: en
+            escritorio los botones ‹ › ya cumplen esta función. */}
+        {grupos.length > 2 ? (
+          <p className="pista-desliza" aria-hidden="true">
+            Desliza para ver más <span className="pista-desliza__flecha">→</span>
+          </p>
+        ) : null}
       </div>
 
       <ul className="colecciones__pista">

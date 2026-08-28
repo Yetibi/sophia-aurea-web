@@ -26,7 +26,7 @@ export async function Cabecera() {
             </Link>
           ))}
           <Link href="/catalogo" className="cabecera__enlace">
-            Disponibilidad
+            Catálogo productos disponibles
           </Link>
         </MenuMovil>
       </div>
@@ -78,7 +78,7 @@ export function Pie() {
         </p>
         <p className="pie__texto">
           <Link className="pie__enlace" href="/catalogo">
-            Ver disponibilidad (catálogo)
+            Catálogo productos disponibles
           </Link>
           <br />
           <Link className="pie__enlace" href="/politicas">

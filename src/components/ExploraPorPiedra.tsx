@@ -89,6 +89,12 @@ export function ExploraPorPiedra({ grupos }: { grupos: GrupoPiedra[] }) {
         <h2 id="piedras-titulo" className="seccion__titulo">
           Explora por piedra
         </h2>
+        {/* Solo en móvil y solo si hay más piedras de las que caben en pantalla */}
+        {grupos.length > 4 ? (
+          <p className="pista-desliza" aria-hidden="true">
+            Desliza para ver más <span className="pista-desliza__flecha">→</span>
+          </p>
+        ) : null}
       </div>
 
       <div className="piedras__filtros">

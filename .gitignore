@@ -11,3 +11,9 @@ npm-debug.log*
 .vercel
 next-env.d.ts
 tsconfig.tsbuildinfo
+
+# Skills de trabajo (ui-ux-pro-max, design-critique): herramientas locales,
+# no codigo del sitio. Se reinstalan con: npx skills add <repo>
+.agents/
+.claude/
+skills-lock.json

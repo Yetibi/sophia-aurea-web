@@ -69,6 +69,12 @@ export function CarruselCategorias({
           <h2 id={tituloId} className="seccion__titulo categorias__titulo">
             Nuestras piezas
           </h2>
+          {/* Solo en móvil y solo si hay más tarjetas de las que caben */}
+          {categorias.length > 1 ? (
+            <p className="pista-desliza" aria-hidden="true">
+              Desliza para ver más <span className="pista-desliza__flecha">→</span>
+            </p>
+          ) : null}
         </div>
         {/* Atajo de escritorio: en móvil sobra, el gesto táctil es natural */}
         <div className="categorias__controles">
