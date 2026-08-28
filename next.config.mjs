@@ -15,6 +15,11 @@ const nextConfig = {
     return [
       { source: "/catalogo", destination: `${externo}/catalogo` },
       { source: "/catalogo/:ruta*", destination: `${externo}/catalogo/:ruta*` },
+      // El catálogo pide sus datos y fotos a rutas absolutas: sin reenviarlas
+      // también, la página carga pero se queda esperando su propio API (404).
+      // No chocan con las de este sitio, que usa /api/foto y /api/revalidar.
+      { source: "/api/productos", destination: `${externo}/api/productos` },
+      { source: "/api/imagen/:ruta*", destination: `${externo}/api/imagen/:ruta*` },
     ];
   },
 };
