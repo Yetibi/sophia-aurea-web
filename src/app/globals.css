@@ -311,10 +311,11 @@ ul {
   gap: 2px;
 }
 /* Alto fijo: el isotipo acompaña al wordmark, no compite con él */
-/* El isotipo es vertical (490x630): a 36px de alto quedaba en 28px de ancho
-   y el elefante con el loto no se distinguía. */
-.marca__isotipo {
-  height: 3.25rem;
+/* lockup-completo-fondo-marfil (2000x2000). El archivo trae bastante margen
+   interno, así que necesita más alto del habitual para que el nombre se lea;
+   la cabecera crece con él. */
+.marca__lockup {
+  height: 5.5rem;
   width: auto;
 }
 .marca__nombre {
@@ -1950,8 +1951,8 @@ ul {
   /* En móvil la cabecera aprieta: queda el isotipo, el nombre se lee en el hero */
   /* Con el menú recogido en el botón hay espacio para la firma completa.
      El isotipo sube a 38px: por debajo de eso no se lee. */
-  .marca__isotipo {
-    height: 46px;
+  .marca__lockup {
+    height: 72px;
   }
   .marca__nombre {
     font-size: 0.95rem;

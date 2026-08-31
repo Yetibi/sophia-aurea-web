@@ -9,22 +9,18 @@ import { MARCA } from "@/lib/site";
  * nombre ya se lee en texto al lado — anunciarlo dos veces estorba al lector.
  */
 export function Wordmark({ comoEnlace = true }: { comoEnlace?: boolean }) {
+  // lockup-completo-fondo-marfil del kit: el mismo logo que usa el catálogo,
+  // para que ambos productos se vean iguales.
   const contenido = (
-    <>
-      <Image
-        className="marca__isotipo"
-        src="/marca/isotipo.png"
-        alt=""
-        aria-hidden="true"
-        width={490}
-        height={630}
-        priority
-      />
-      <span className="marca__texto">
-        <span className="marca__nombre">{MARCA.nombre}</span>
-        <span className="marca__bajada">{MARCA.tagline}</span>
-      </span>
-    </>
+    <Image
+      className="marca__lockup"
+      src="/marca/lockup-completo-fondo-marfil.png"
+      alt=""
+      aria-hidden="true"
+      width={2000}
+      height={2000}
+      priority
+    />
   );
 
   if (!comoEnlace) return <span className="marca">{contenido}</span>;
