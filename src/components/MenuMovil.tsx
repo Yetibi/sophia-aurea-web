@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 /**
  * Menú de la cabecera en móvil.
@@ -14,6 +15,15 @@ export function MenuMovil({ children }: { children: React.ReactNode }) {
   const boton = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLDivElement>(null);
   const idPanel = useId();
+  const ruta = usePathname();
+
+  // Next navega sin recargar la página, así que el panel sobrevivía al
+  // cambio de ruta y tapaba el contenido de destino. Al cambiar la ruta se
+  // cierra solo; no se devuelve el foco al botón porque el foco ya viajó a
+  // la página nueva.
+  useEffect(() => {
+    setAbierto(false);
+  }, [ruta]);
 
   useEffect(() => {
     if (!abierto) return;

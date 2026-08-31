@@ -37,13 +37,16 @@ export interface CanalDeVenta {
 
 const NUMERO = process.env.NEXT_PUBLIC_WHATSAPP ?? "";
 
-function mensajeParaPieza({ pieza, origen }: IntencionDeCompra): string {
+function mensajeParaPieza({ pieza }: IntencionDeCompra): string {
   // El SKU viaja en el mensaje: es la unica forma real de atribuir una
   // conversacion de WhatsApp a una pieza del sitio (wa.me descarta los UTM).
+  // El origen NO se incluye: era un codigo interno ("detalle") que el cliente
+  // veia en su propio chat sin entender que significaba.
+  const detalle = [pieza.tipoPieza, pieza.piedra].filter(Boolean).join(" · ");
   const lineas = [
     `Hola, vengo del sitio de Sophia Auréa.`,
-    `Me interesa ${pieza.nombre} (${pieza.tipoPieza}${pieza.piedra ? ` · ${pieza.piedra}` : ""}).`,
-    `Ref: ${pieza.sku} · ${origen}`,
+    `Me interesa ${pieza.nombre}${detalle ? ` (${detalle})` : ""}.`,
+    `Ref: ${pieza.sku}`,
   ];
   return lineas.join("\n");
 }
@@ -108,12 +111,39 @@ export function canalActivo(): CanalDeVenta {
   return canal.configurado() ? canal : canalWhatsApp;
 }
 
-/** Enlace de contacto general, sin pieza asociada. */
+/**
+ * Enlace de contacto general, sin pieza asociada.
+ *
+ * El mensaje se redacta según de dónde salga el clic: quien escribe desde la
+ * portada no viene de una pieza concreta, y decirle "me interesa esta pieza"
+ * confunde a quien atiende. El origen se traduce a lenguaje natural en vez de
+ * mandar el código interno, que el cliente veía en su propio chat.
+ */
 export function enlaceWhatsAppGeneral(origen: string): string {
-  const texto = encodeURIComponent(
-    `Hola, vengo del sitio de Sophia Auréa y quiero saber mas sobre las piezas.\nRef: ${origen}`,
-  );
+  const texto = encodeURIComponent(mensajeGeneral(origen));
   return `https://wa.me/${NUMERO}?text=${texto}`;
+}
+
+/** Contexto legible por origen. La clave sigue sirviendo para atribución. */
+function mensajeGeneral(origen: string): string {
+  const saludo = "Hola, vengo del sitio de Sophia Auréa.";
+
+  // Colección: el slug viene en el origen (p. ej. "coleccion-fortuna")
+  if (origen.startsWith("coleccion-")) {
+    const nombre = origen
+      .slice("coleccion-".length)
+      .replace(/-/g, " ")
+      .replace(/^./, (c) => c.toUpperCase());
+    return `${saludo}\nMe interesa la colección ${nombre} y quiero saber más.`;
+  }
+
+  // Categoría: "categoria-dijes" → "los dijes"
+  if (origen.startsWith("categoria-")) {
+    const nombre = origen.slice("categoria-".length).replace(/-/g, " ");
+    return `${saludo}\nQuiero saber más sobre ${nombre}.`;
+  }
+
+  return `${saludo}\nQuiero saber más sobre las joyas.`;
 }
 
 // El negocio decidió mostrar precios (filtro de contacto). Se puede apagar con

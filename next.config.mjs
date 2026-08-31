@@ -4,6 +4,10 @@ const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 86400,
+    // El catálogo se reenvía bajo /catalogo, así que su logo lo optimiza
+    // ESTE proyecto. Sin autorizar su subdominio, next/image responde 400 y
+    // el logo aparece roto (el catálogo, en cambio, sí carga).
+    remotePatterns: [{ protocol: "https", hostname: "catalogo.sophiaaurea.co" }],
   },
   async rewrites() {
     // El catálogo operativo es OTRO proyecto de Vercel y vive en su propio

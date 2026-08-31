@@ -34,7 +34,8 @@ export async function Cabecera() {
   );
 }
 
-export function Cierre() {
+/** `origen` da contexto al mensaje de WhatsApp (ver enlaceWhatsAppGeneral). */
+export function Cierre({ origen = "cierre" }: { origen?: string }) {
   return (
     <section className="cierre" aria-labelledby="cierre-titulo">
       <div className="contenedor">
@@ -44,7 +45,7 @@ export function Cierre() {
         <p className="firma cierre__firma">{MARCA.nombre}</p>
         <a
           className="boton boton--whatsapp cierre__boton"
-          href={enlaceWhatsAppGeneral("cierre")}
+          href={enlaceWhatsAppGeneral(origen)}
           target="_blank"
           rel="noopener noreferrer"
         >

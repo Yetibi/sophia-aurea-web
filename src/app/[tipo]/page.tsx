@@ -120,7 +120,7 @@ export default async function PaginaCategoria({ params }: Props) {
         </div>
       </section>
 
-      <Cierre />
+      <Cierre origen={`categoria-${info.etiqueta.toLowerCase()}`} />
     </>
   );
 }
