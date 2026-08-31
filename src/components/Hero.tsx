@@ -126,7 +126,21 @@ export function Hero({
           ))}
         </h1>
 
-        <p className="hero-editorial__descripcion">{descripcion}</p>
+        {/* Rota con la imagen: muestra la frase ancla de la pieza en pantalla
+            —copy ya validado en el Excel— y cae a la descripción de marca
+            cuando esa pieza no tiene frase. Nunca se inventa texto. */}
+        <p className="hero-editorial__descripcion">
+          {fotos.map((pieza, i) => (
+            <span
+              key={pieza.slug}
+              className={`hero-editorial__sub${
+                !animar || i === activo ? " es-activa" : ""
+              }${animar ? " rota" : ""}`}
+            >
+              {pieza.frase || descripcion}
+            </span>
+          ))}
+        </p>
         <p className="firma hero-editorial__firma">{firma}</p>
         <div className="hero-editorial__acciones">{acciones}</div>
 
