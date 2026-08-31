@@ -17,3 +17,5 @@ tsconfig.tsbuildinfo
 .agents/
 .claude/
 skills-lock.json
+dg.mjs
+lg.mjs
