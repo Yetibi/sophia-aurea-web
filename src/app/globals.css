@@ -311,8 +311,10 @@ ul {
   gap: 2px;
 }
 /* Alto fijo: el isotipo acompaña al wordmark, no compite con él */
+/* El isotipo es vertical (490x630): a 36px de alto quedaba en 28px de ancho
+   y el elefante con el loto no se distinguía. */
 .marca__isotipo {
-  height: 2.25rem;
+  height: 3.25rem;
   width: auto;
 }
 .marca__nombre {
@@ -1949,7 +1951,7 @@ ul {
   /* Con el menú recogido en el botón hay espacio para la firma completa.
      El isotipo sube a 38px: por debajo de eso no se lee. */
   .marca__isotipo {
-    height: 38px;
+    height: 46px;
   }
   .marca__nombre {
     font-size: 0.95rem;
