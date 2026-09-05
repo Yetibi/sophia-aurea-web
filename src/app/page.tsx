@@ -121,12 +121,25 @@ export default async function Portada() {
     titulo: a.titulo,
   }));
 
-  // Fotos del hero: primero las destacadas; si ninguna tiene foto, cualquiera
-  // que la tenga. Tres estados, uno por frase del mantra. El barajado y la
-  // rotación ocurren en el cliente.
+  // Fotos del hero: una pieza por colección, para que no salgan tres elefantes
+  // seguidos. Antes tomaba las tres primeras con foto y, como Fortuna encabeza
+  // el Excel, el hero siempre mostraba la misma colección. Dentro de cada
+  // colección se prefiere una destacada; el orden y la rotación se resuelven
+  // en el cliente.
   const conFoto = piezas.filter((p) => p.foto);
-  const destacadasConFoto = conFoto.filter((p) => p.destacada);
-  const fotosHero = (destacadasConFoto.length > 0 ? destacadasConFoto : conFoto).slice(0, 3);
+  const porColeccion = new Map<string, typeof conFoto>();
+  for (const pieza of conFoto) {
+    const clave = pieza.coleccion || "sin-coleccion";
+    porColeccion.set(clave, [...(porColeccion.get(clave) ?? []), pieza]);
+  }
+  const candidatasHero = [...porColeccion.values()].map(
+    (grupo) => grupo.find((p) => p.destacada) ?? grupo[0]
+  );
+  // Si hubiera una sola colección, se completa con otras piezas para no
+  // quedarse con un único estado.
+  const fotosHero = (
+    candidatasHero.length > 1 ? candidatasHero : conFoto
+  ).slice(0, 5);
 
   // Una tarjeta por tipo de pieza, con la foto de una destacada de ese tipo
   // (o la primera con foto). Los tipos sin ninguna foto no se muestran.

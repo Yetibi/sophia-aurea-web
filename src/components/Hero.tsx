@@ -57,7 +57,10 @@ export function Hero({
     return () => consulta.removeEventListener("change", aplicar);
   }, []);
 
-  const estados = Math.min(mantra.length, Math.max(orden.length, 1));
+  // Un estado por foto, no por frase: así se ven todas las colecciones. El
+  // mantra es copy validado y no se puede ampliar, así que sus frases se
+  // reciclan en orden (frase = mantra[i % mantra.length]).
+  const estados = Math.max(orden.length, 1);
 
   useEffect(() => {
     if (!animar || pausado || estados < 2) return;
@@ -118,7 +121,7 @@ export function Hero({
             <span
               key={frase}
               className={`hero-editorial__frase${
-                !animar || i === activo ? " es-activa" : ""
+                !animar || i === activo % mantra.length ? " es-activa" : ""
               }${animar ? " rota" : ""}`}
             >
               {frase}
